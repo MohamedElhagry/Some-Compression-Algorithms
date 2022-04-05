@@ -1,0 +1,94 @@
+import java.util.ArrayList;
+
+public class LZWComp {
+
+    int getBits(int num) {
+        int bits = 0;
+        while (num > 0) {
+            num /= 2;
+            bits++;
+        }
+        return bits;
+    }
+
+    private String numToBinary(int num, int padd) {
+        // numbers are written from left to right
+        String s = "";
+        while (num > 0) {
+            s = s + Integer.toString(num % 2);
+            num /= 2;
+        }
+        while (s.length() != padd) s += '0';
+        return s;
+    }
+
+    LZWDictionary dict;
+    ArrayList<Integer> tags;
+    int posSize;
+
+    LZWComp() {
+        posSize = 0;
+    }
+
+    String compress(String data) {
+
+        String temp = "";
+        int lastInd = 0, ind = 0;
+        tags = new ArrayList<Integer>();
+        dict = new LZWDictionary();
+
+        for (int i = 0; i < data.length(); i++) {
+            temp += data.charAt(i);
+
+            ind = dict.find(temp);
+            if (ind == -1) {
+                i--; // because I didnt find the last char
+                tags.add(lastInd);
+                dict.add(temp);
+                lastInd = 0;
+                temp = "";
+            } else
+                lastInd = ind;
+        }
+        if (temp != "") tags.add(dict.find(temp)); // to account for last character
+
+        String compressedStr = "";
+        posSize = 0;
+        for (int i = 0; i < tags.size(); i++)
+            posSize = Math.max(posSize, getBits(tags.get(i)));
+
+        for (int i = 0; i < tags.size(); i++)
+            compressedStr += numToBinary(tags.get(i), posSize);
+
+        return compressedStr;
+    }
+
+    void showTags() {
+        for (int i = 0; i < tags.size(); i++)
+            System.out.println(tags.get(i));
+    }
+
+    public void compressionRatio(String data) {
+        String unCompressedStr = "";
+        for (int i = 0; i < data.length(); i++)
+            unCompressedStr += numToBinary(data.charAt(i), 7);
+        System.out.println("Compression Ratio (Original: Compressed) = " + unCompressedStr.length() + " : " + compress(data).length());
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Student Name: Mohamed Amr Elhagry , ID = 20190725");
+        String data = "ABAABABBAABAABAAAABABBBBBBBB";
+        LZWComp obj = new LZWComp();
+
+        String compressedStr = obj.compress(data);
+        obj.showTags();
+        System.out.println("Compressed Str : " + compressedStr);
+        obj.compressionRatio(data);
+
+        LZWDecomp obj2 = new LZWDecomp(obj.posSize);
+        String decompressedStr = obj2.decompress(compressedStr);
+        System.out.println("Decompressed String: " + decompressedStr);
+    }
+
+
+}
