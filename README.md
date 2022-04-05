@@ -1,2 +1,2 @@
 # Some-Compression-Algorithms
-Some algorithms I implements for the data compression course.
+Some algorithms I implemented for the data compression course.
